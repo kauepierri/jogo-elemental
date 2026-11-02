@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athanor, protótipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+<style>
+  /* Plano visual: noite índigo, painéis um pouco mais claros, cartas em marfim para os bichinhos aparecerem.
+     Layout: coluna única de celular, barra de recursos no topo e abas embaixo. */
+  :root {
+    --bg: #15152B; --panel: #212145; --panel2: #2B2B58; --card: #F5F2E8; --ink: #F0ECFF; --muted: #A8A5CB;
+    --gold: #F2B63D; --line: #3A3A70; --good: #7BD88F;
+    --campo: #E2A93B; --lago: #6E7BD6; --bosque: #3A2260; --planicie: #6E9A63; --eter: #BFEFFF;
+    --display: 'Marcellus', Georgia, serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { min-height: 100vh; display: flex; justify-content: center; }
+  #app { width: 100%; max-width: 480px; min-height: 100vh; padding: 0 16px 92px; position: relative; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; letter-spacing: .5px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+  .top { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 14px 0 10px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .top .lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+  .top .big { font-family: var(--display); font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .top .rate { font-size: 14px; color: var(--good); font-variant-numeric: tabular-nums; text-align: right; }
+  .top .rate small { display: block; color: var(--muted); font-size: 12px; }
+
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; background: #0F0F20; border-top: 1px solid var(--line); }
+  .tabs .in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .tab { background: none; border: 0; padding: 14px 8px 16px; font-size: 15px; color: var(--muted); border-top: 3px solid transparent; font-family: var(--display); letter-spacing: 1px; }
+  .tab[aria-selected="true"] { color: var(--gold); border-top-color: var(--gold); }
+
+  section { display: none; padding-top: 18px; }
+  section.on { display: block; }
+
+  .altar { position: relative; height: 270px; border-radius: 20px; background: radial-gradient(circle at 50% 60%, #34346B 0%, var(--panel) 62%); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .altar .ring { position: absolute; border-radius: 50%; border: 1px solid #4B4B8C; }
+  .altar .r1 { width: 230px; height: 230px; } .altar .r2 { width: 170px; height: 170px; border-style: dashed; } .altar .r3 { width: 110px; height: 110px; }
+  .altar .glyph { position: relative; z-index: 1; width: 200px; height: 230px; display: flex; align-items: center; justify-content: center; }
+  .altar .glyph img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .altar .hint { color: var(--muted); font-family: var(--display); font-size: 18px; text-align: center; padding: 0 30px; }
+  .altar.summon .ring { animation: spin 0.8s ease-in; border-color: var(--gold); }
+  .altar.summon .r2 { animation-direction: reverse; }
+  @keyframes spin { from { transform: rotate(0) scale(.7); opacity: .3; } to { transform: rotate(180deg) scale(1.08); opacity: 1; } }
+  .altar.summon .glyph { animation: appear .5s .45s both; }
+  @keyframes appear { from { opacity: 0; transform: translateY(14px) scale(.9); } to { opacity: 1; transform: none; } }
+  .shine-fx { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, rgba(255,230,140,.35), transparent 60%); }
+
+  .primary { width: 100%; margin-top: 14px; padding: 16px; border: 0; border-radius: 14px; background: var(--gold); color: #2A1B00; font-weight: 700; font-size: 17px; display: flex; justify-content: space-between; align-items: center; }
+  .primary[disabled] { background: #3A3A66; color: #8C89B5; cursor: not-allowed; }
+  .primary .c { font-variant-numeric: tabular-nums; }
+  .sub { font-size: 13px; color: var(--muted); margin-top: 8px; min-height: 18px; }
+
+  .result { margin-top: 14px; background: var(--card); color: #2B2540; border-radius: 16px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; }
+  .result img { width: 64px; height: 64px; object-fit: contain; }
+  .result b { font-family: var(--display); font-size: 22px; font-weight: 400; display: block; }
+  .tag { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 99px; background: #E6E1F5; color: #3B3566; margin-right: 4px; }
+  .tag.shiny { background: linear-gradient(90deg, #FFE08A, #FFC24A); color: #4A2F00; font-weight: 700; }
+
+  h3 { font-size: 20px; margin: 26px 0 10px; }
+  .goals { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .goals li { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; gap: 10px; font-size: 15px; }
+  .goals .rw { color: var(--gold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .goals .prog { font-size: 12px; color: var(--muted); display: block; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; }
+  .stat b { font-family: var(--display); font-size: 24px; font-weight: 400; display: block; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 12px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+  .cc { position: relative; background: var(--card); color: #2B2540; border-radius: 16px; padding: 8px 8px 10px; text-align: center; overflow: hidden; border: 3px solid transparent; }
+  .cc img { width: 100%; height: 118px; object-fit: contain; }
+  .cc b { font-family: var(--display); font-weight: 400; font-size: 19px; display: block; margin-top: 2px; }
+  .cc .rt { font-size: 12px; color: #5A5480; font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .cc.shiny { border-color: #FFC24A; box-shadow: 0 0 18px rgba(255, 194, 74, .55); }
+  .cc.shiny img { filter: hue-rotate(150deg) saturate(1.5) brightness(1.08); }
+  .cc.shiny::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%); background-size: 250% 100%; animation: sheen 3s linear infinite; }
+  @keyframes sheen { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+  .empty { color: var(--muted); text-align: center; padding: 28px 10px; font-family: var(--display); font-size: 18px; }
+
+  .map { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .tile { aspect-ratio: 1; border-radius: 12px; border: 1px solid var(--line); background: #1B1B38; color: var(--muted); font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4px; line-height: 1.15; position: relative; }
+  .tile.locked { opacity: .35; cursor: default; }
+  .tile.buy { border: 2px dashed var(--gold); color: var(--gold); background: #1F1F40; }
+  .tile.buy.poor { border-color: #6A6AA0; color: #8C89B5; }
+  .tile.own { color: #fff; border: 2px solid rgba(255,255,255,.25); cursor: default; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+  .tile.own.planicie { background: var(--planicie); } .tile.own.campo { background: var(--campo); color: #3A2400; text-shadow: none; }
+  .tile.own.lago { background: var(--lago); } .tile.own.bosque { background: var(--bosque); }
+  .tile.own.eter { background: radial-gradient(circle, #FFFFFF, var(--eter) 60%, #86CFEA); color: #0E3550; text-shadow: none; box-shadow: 0 0 14px rgba(190, 239, 255, .7); }
+  .tile.fresh { animation: pop .6s; }
+  @keyframes pop { from { transform: scale(.4); } 60% { transform: scale(1.12); } to { transform: scale(1); } }
+  .tile .nm { font-weight: 700; } .tile .cost { font-variant-numeric: tabular-nums; }
+  .legend { display: grid; gap: 6px; margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 8px; vertical-align: -1px; }
+  .ghost { background: none; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); padding: 10px 14px; margin-top: 26px; font-size: 14px; }
+
+  #toasts { position: fixed; left: 0; right: 0; top: 76px; z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; padding: 0 16px; }
+  .toast { max-width: 440px; width: 100%; background: #FFF6D6; color: #3A2A00; border-radius: 12px; padding: 10px 14px; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.4); animation: slide .35s both; }
+  .toast.info { background: #E4E6FF; color: #1F2150; }
+  @keyframes slide { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div>
+      <div class="lbl">Essência</div>
+      <div class="big" id="essence">0</div>
+    </div>
+    <div class="rate"><span id="rate">+0/s</span><small id="count"></small></div>
+  </header>
+
+  <section id="s-altar" class="on" aria-label="Altar">
+    <div class="altar" id="altar">
+      <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+      <div class="glyph" id="glyph"><div class="hint">Faça um ritual para chamar o seu primeiro bichinho</div></div>
+    </div>
+    <button class="primary" id="btnRitual"><span>Fazer ritual</span><span class="c" id="ritualCost"></span></button>
+    <div class="sub" id="ritualSub"></div>
+    <div id="result"></div>
+    <h3>Próximos marcos</h3>
+    <ul class="goals" id="goals"></ul>
+  </section>
+
+  <section id="s-colecao" aria-label="Coleção">
+    <div class="stats" id="stats"></div>
+    <div id="collection"></div>
+  </section>
+
+  <section id="s-mapa" aria-label="Mapa">
+    <div class="sub" style="margin:0 0 10px" id="mapSub"></div>
+    <div class="map" id="map"></div>
+    <div class="legend" id="legend"></div>
+    <button class="ghost" id="btnReset">Reiniciar o jogo</button>
+  </section>
+
+  <nav class="tabs" aria-label="Seções"><div class="in" role="tablist">
+    <button class="tab" role="tab" data-tab="altar" aria-selected="true">Altar</button>
+    <button class="tab" role="tab" data-tab="colecao" aria-selected="false">Coleção</button>
+    <button class="tab" role="tab" data-tab="mapa" aria-selected="false">Mapa</button>
+  </div></nav>
+  <div id="toasts" aria-live="polite"></div>
+</div>
+
+<script>
+/*ENGINE*/
+
+// ===== TELA =====
+const $ = id => document.getElementById(id);
+const KEY = 'athanor-prototipo-v1';
+let S = load();
+let tab = 'altar', lastResult = null, freshLand = null, resetArmed = 0;
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) { const s = JSON.parse(raw); if (s && s.v === 1) return s; }
+  } catch (e) {}
+  return newState();
+}
+function save() {
+  S.lastSave = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+}
+
+function fmt(n) {
+  if (n < 1000) return n < 10 ? n.toFixed(1) : Math.floor(n).toString();
+  if (n < 1e6) return (n / 1000).toFixed(n < 10000 ? 2 : 1) + 'k';
+  return (n / 1e6).toFixed(2) + 'M';
+}
+function fmtTime(s) {
+  s = Math.round(s);
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.floor(s / 60) + ' min ' + (s % 60 ? (s % 60) + 's' : '');
+  return Math.floor(s / 3600) + ' h ' + Math.floor((s % 3600) / 60) + ' min';
+}
+function toast(text, cls) {
+  const d = document.createElement('div');
+  d.className = 'toast ' + (cls || ''); d.textContent = text;
+  const box = $('toasts');
+  while (box.children.length >= 3) box.firstChild.remove();
+  box.appendChild(d);
+  setTimeout(() => d.remove(), 3500);
+}
+
+function creatureCard(c) {
+  const sp = SPECIES[c.species], tr = TRAITS[c.trait];
+  return `<div class="cc ${c.shiny ? 'shiny' : ''}">
+    <img src="${sp.img}" alt="${sp.name}${c.shiny ? ' Brilhante' : ''}">
+    <b>${sp.name}</b>
+    <div><span class="tag">${tr.name}</span>${c.shiny ? '<span class="tag shiny">Brilhante</span>' : ''}</div>
+    <div class="rt">+${creatureRate(S, c).toFixed(2)}/s</div>
+  </div>`;
+}
+
+function renderAltar() {
+  const cost = ritualCost(S);
+  $('ritualCost').textContent = fmt(cost) + ' essência';
+  $('btnRitual').disabled = S.essence < cost;
+  const need = cost - S.essence, r = totalRate(S);
+  $('ritualSub').textContent = need > 0 ? (r > 0 ? 'Faltam ' + fmt(need) + ' (cerca de ' + fmtTime(need / r) + ')' : 'Faltam ' + fmt(need)) : 'Chance de Brilhante: 1% por ritual';
+  const g = GOALS.filter(x => !S.goals.includes(x.id)).slice(0, 3);
+  $('goals').innerHTML = g.length ? g.map(x => `<li><span>${x.text}${progress(x)}</span><span class="rw">+${x.reward}</span></li>`).join('') : '<li>Você completou todos os marcos deste protótipo.</li>';
+}
+function progress(g) {
+  const lands = landCount(S) - 1, cr = S.creatures.length;
+  const map = { g2: [cr, 3], g3: [lands, 2], g5: [lands, 6], g6: [cr, 8], g9: [lands, 15], g10: [cr, 20] };
+  const p = map[g.id];
+  return p ? `<span class="prog">${Math.min(p[0], p[1])} de ${p[1]}</span>` : '';
+}
+
+function renderCollection() {
+  const n = S.creatures.length;
+  const shinies = S.creatures.filter(c => c.shiny).length;
+  const kinds = SPECIES_KEYS.filter(k => S.creatures.some(c => c.species === k)).length;
+  $('stats').innerHTML = `<div class="stat"><b>${n}</b><span>bichinhos</span></div><div class="stat"><b>${kinds}/3</b><span>espécies</span></div><div class="stat"><b>${shinies}</b><span>brilhantes</span></div>`;
+  if (!n) { $('collection').innerHTML = '<div class="empty">Nada por aqui ainda.<br>Faça um ritual no Altar.</div>'; return; }
+  const order = [...S.creatures].sort((a, b) => (b.shiny - a.shiny) || a.species.localeCompare(b.species) || a.id - b.id);
+  $('collection').innerHTML = '<div class="grid">' + order.map(creatureCard).join('') + '</div>';
+}
+
+function renderMap() {
+  const n = CFG.gridSize, cost = landCost(S);
+  let h = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    const k = r + ',' + c, b = S.lands[k];
+    if (b) h += `<div class="tile own ${b} ${freshLand === k ? 'fresh' : ''}"><span class="nm">${BIOMES[b].name}</span></div>`;
+    else if (canBuyLand(S, r, c)) h += `<button class="tile buy ${S.essence < cost ? 'poor' : ''}" data-r="${r}" data-c="${c}" aria-label="Comprar terra por ${fmt(cost)} de essência"><span>Comprar</span><span class="cost">${fmt(cost)}</span></button>`;
+    else h += '<div class="tile locked"></div>';
+  }
+  $('map').innerHTML = h;
+  const have = landCount(S) - 1;
+  $('mapSub').textContent = `${have} de ${n * n - 1} terras compradas. Cada terra nova revela um bioma sorteado. Chance de Fonte de Éter: ${(rareLandChance(S) * 100).toFixed(0)}%.`;
+  const sp = k => 1 + CFG.speciesBonusPerLand * (Object.values(S.lands).filter(x => x === SPECIES[k].biome).length);
+  $('legend').innerHTML =
+    `<div><i style="background:var(--campo)"></i>Campo Dourado: Sóis x${sp('sol').toFixed(2)}</div>
+     <div><i style="background:var(--lago)"></i>Lago Lunar: Luas x${sp('lua').toFixed(2)}</div>
+     <div><i style="background:var(--bosque)"></i>Bosque Sombrio: Sombras x${sp('sombra').toFixed(2)}</div>
+     <div><i style="background:var(--planicie)"></i>Planície: sem bônus</div>
+     <div><i style="background:var(--eter)"></i>Fonte de Éter (raro): todos x${(1 + CFG.etherBonusPerLand * Object.values(S.lands).filter(x => x === 'eter').length).toFixed(2)}</div>`;
+}
+
+function renderAll() { renderAltar(); renderCollection(); renderMap(); updateTop(); }
+function updateTop() {
+  $('essence').textContent = fmt(S.essence);
+  const r = totalRate(S);
+  $('rate').textContent = '+' + r.toFixed(2) + '/s';
+  $('count').textContent = S.creatures.length + ' bichinhos';
+}
+function flushGoals() {
+  while (S.pending.length) {
+    const g = GOALS.find(x => x.id === S.pending.shift());
+    if (g) toast('Marco concluído: ' + g.text + ' (+' + g.reward + ' essência)');
+  }
+}
+
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === 's-' + t));
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  renderAll(); window.scrollTo(0, 0);
+}
+
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+$('btnRitual').addEventListener('click', () => {
+  if (S.essence < ritualCost(S)) return;
+  const altar = $('altar');
+  const c = doRitual(S, Math.random);
+  if (!c) return;
+  save();
+  lastResult = c;
+  altar.classList.remove('summon'); void altar.offsetWidth; altar.classList.add('summon');
+  const sp = SPECIES[c.species];
+  $('glyph').innerHTML = `<img src="${sp.img}" alt="${sp.name}" style="${c.shiny ? 'filter:hue-rotate(150deg) saturate(1.5) brightness(1.08)' : ''}">` + (c.shiny ? '<div class="shine-fx"></div>' : '');
+  const tr = TRAITS[c.trait];
+  $('result').innerHTML = `<div class="result"><img src="${sp.img}" alt=""><div><b>${sp.name}</b><span class="tag">${tr.name}</span>${c.shiny ? '<span class="tag shiny">Brilhante</span>' : ''}<div style="font-size:13px;color:#5A5480;margin-top:4px">${tr.desc} · +${creatureRate(S, c).toFixed(2)}/s</div></div></div>`;
+  if (c.shiny) toast('Brilhante! Um em cem. Ele produz o dobro.');
+  renderAll(); flushGoals();
+});
+
+$('map').addEventListener('click', e => {
+  const t = e.target.closest('.buy'); if (!t) return;
+  const r = +t.dataset.r, c = +t.dataset.c, cost = landCost(S);
+  if (S.essence < cost) { toast('Faltam ' + fmt(cost - S.essence) + ' de essência para essa terra.', 'info'); return; }
+  const b = buyLand(S, r, c, Math.random);
+  if (!b) return;
+  freshLand = r + ',' + c; save();
+  toast('Terra nova: ' + BIOMES[b].name + '. ' + BIOMES[b].note + '.', b === 'eter' ? '' : 'info');
+  renderAll(); flushGoals();
+});
+
+$('btnReset').addEventListener('click', () => {
+  const b = $('btnReset');
+  if (!resetArmed) { resetArmed = 1; b.textContent = 'Tem certeza? Toque de novo para apagar tudo'; setTimeout(() => { resetArmed = 0; b.textContent = 'Reiniciar o jogo'; }, 4000); return; }
+  resetArmed = 0; S = newState(); save(); lastResult = null; freshLand = null;
+  $('result').innerHTML = ''; $('glyph').innerHTML = '<div class="hint">Faça um ritual para chamar o seu primeiro bichinho</div>';
+  b.textContent = 'Reiniciar o jogo'; renderAll(); setTab('altar');
+});
+
+// progresso enquanto a aba está aberta e quando o jogador volta
+let last = Date.now();
+setInterval(() => {
+  const now = Date.now(), dt = Math.min((now - last) / 1000, 5); last = now;
+  tick(S, dt);
+  updateTop();
+  const cost = ritualCost(S);
+  $('btnRitual').disabled = S.essence < cost;
+  if (tab === 'altar') renderAltar();
+}, 500);
+setInterval(save, 5000);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) save();
+  else {
+    const back = applyOffline(S, Date.now()); last = Date.now();
+    if (back) toast('Enquanto você estava fora (' + fmtTime(back.secs) + '): +' + fmt(back.gained) + ' essência', 'info');
+    renderAll();
+  }
+});
+
+// ao abrir: aplica o tempo desde a última vez
+const back = applyOffline(S, Date.now());
+renderAll();
+if (back) toast('Enquanto você estava fora (' + fmtTime(back.secs) + '): +' + fmt(back.gained) + ' essência', 'info');
+checkGoals(S); flushGoals();
+</script>
+</body>
+</html>

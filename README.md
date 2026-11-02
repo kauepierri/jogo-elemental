@@ -9,3 +9,7 @@ Tudo o que já foi decidido está em [docs/design.md](docs/design.md). Os três 
 - Fase atual: documento de design.
 - Próximo passo: primeira versão jogável em um arquivo HTML, sem arte final.
 - O protótipo antigo de Xadrez Elemental foi descartado.
+
+## Protótipo jogável
+
+Pasta [prototipo/](prototipo/): `engine.js` (regras e números, todos em `CFG`), `template.html` (tela), `build.js` (junta os dois em `index.html`) e `sim.js` (simula jogadores para conferir o ritmo). Para gerar de novo: `node prototipo/build.js`. Para simular: `node prototipo/sim.js`.
