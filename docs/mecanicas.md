@@ -17,8 +17,8 @@ Este documento corrige o protótipo atual e define a mecânica antes de construi
 
 ## Nome
 
-- Os bichinhos se chamam **Essências**.
-- A moeda comum, que hoje também se chama Essência, passa a se chamar **Poeira**.
+- Os bichinhos se chamam **Lumbras** (de lume, luz, e sombra). Nome decidido em 02/11/2026.
+- A moeda comum, que no protótipo se chamava Essência, passa a se chamar **Poeira**.
 - **Velas:** moeda do ritual (gacha). Só em missões.
 - **Fragmentos:** vêm de repetidas e de missões. Sobem a Estrela e a evolução de cada espécie.
 
@@ -38,11 +38,11 @@ Resultado: ninguém acumula milhares de bichinhos, mas apertar o botão continua
 | Ciclo | Prazo | O que é | Recompensa |
 |---|---|---|---|
 | **Pedido** | surge um a cada 2 min (até 3 na fila) | Um visitante pede algo pequeno, como "colete 20 cristais". Os bichinhos cumprem sozinhos. | Pouca Poeira e 1 ponto de Presença |
-| **Expedição curta** | 30 min | Você manda 1 a 2 Essências. Elas saem do trabalho enquanto estão fora. | Poeira, 1 Fragmento |
-| **Expedição longa** | 4 h | Manda 3 Essências. | Poeira, 3 Fragmentos, **1 Vela** |
+| **Expedição curta** | 30 min | Você manda 1 a 2 Lumbras. Elas saem do trabalho enquanto estão fora. | Poeira, 1 Fragmento |
+| **Expedição longa** | 4 h | Manda 3 Lumbras. | Poeira, 3 Fragmentos, **1 Vela** |
 | **Dia** | reinicia à meia-noite de Brasília | 3 tarefas simples (cumprir 5 pedidos, 1 curta, 1 longa). | Baú com 2 Velas e Fragmentos |
 
-Quem manda Essências em expedição perde a produção delas por um tempo. Essa escolha é a estratégia: com poucos bichinhos, você decide quanto trabalhar e quanto explorar.
+Quem manda Lumbras em expedição perde a produção delas por um tempo. Essa escolha é a estratégia: com poucos bichinhos, você decide quanto trabalhar e quanto explorar.
 
 ## Automático e bônus de presença
 
@@ -70,7 +70,7 @@ Quem manda Essências em expedição perde a produção delas por um tempo. Essa
 
 ## O que muda no mundo 2D (depois)
 
-- Os **pedidos** aparecem como balões sobre um visitante ou sobre a Essência.
+- Os **pedidos** aparecem como balões sobre um visitante ou sobre a Lumbra.
 - As **expedições** saem por um portal no mapa e voltam carregando o que acharam.
 - O **Celeiro** é uma construção que enche visivelmente.
 - O **Altar** é onde acontece o ritual.
